@@ -62,12 +62,13 @@ public class FACountryCoder<CoderItem: Codable> {
         let resourceSection = _docURL.pathComponents.last?.split(separator: ".")
         
         if let resource = resourceSection?[0], let ext = resourceSection?[1] {
-            guard let url = Bundle.main.url(forResource: "\(resource)", withExtension: ".\(ext)") else { fatalError() }
 
             let firstTime = FileManager.default.fileExists(atPath: _docURL.path)
 
             if !firstTime {
-                
+
+                guard let url = Bundle.main.url(forResource: "\(resource)", withExtension: ".\(ext)") else { fatalError() }
+
                 do {
                     
                 try FileManager.default.copyItem(at: url, to: _docURL)
