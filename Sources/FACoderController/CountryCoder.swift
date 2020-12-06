@@ -7,19 +7,35 @@
 
 import Foundation
 
-public class FACountryCoder<CoderItem: Codable> {
+/// A wrapper class that manages coding of a file for an app.  One instance will manage one file.
+public class AACoder<CoderItem: Codable> {
     
-    private let _docURL: URL //FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("countries.json")
+    private let _codedDocumentURL: URL //FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("countries.json")
     
-    public init(withDocumentURL docURL: URL) {
-        self._docURL = docURL
+    public init(withCodedDocumentURL documentURL: URL) {
+        self._codedDocumentURL = documentURL
+    }
+    
+    
+    /// Checks if the coded document that is being managed by the Coder exists, if the file exists it at the loaction it will return true.
+    /// - Returns: Bool
+    public func documentExists() -> Bool {
+        return FileManager.default.fileExists(atPath: _codedDocumentURL.path)
+    }
+    
+    /// Copies the file from the bundle from the full bundle URL provided to the location managed by the Coder
+    /// - Parameter bundleURL: The URL of the parent Bundle where the master copy of the file is located
+    public func copyDocument(fromBundleURL bundleURL: URL) {
+        do {
+            try FileManager.default.copyItem(at: bundleURL, to: _codedDocumentURL)
+        } catch {
+            print("\(error)")
+        }
     }
     
     public func decode() throws -> [CoderItem] {
-        
-        performFirstTimeCheck()
-        
-        guard let data = try? Data(contentsOf: _docURL) else {
+                
+        guard let data = try? Data(contentsOf: _codedDocumentURL) else {
             throw DatabaseError.noData
         }
         
@@ -39,7 +55,7 @@ public class FACountryCoder<CoderItem: Codable> {
         do {
             data = try encoder.encode(countries.self)
 
-            try data.write(to: _docURL)
+            try data.write(to: _codedDocumentURL)
             
         } catch {
             print(error)
@@ -48,7 +64,7 @@ public class FACountryCoder<CoderItem: Codable> {
     
     @discardableResult public func resetFile() -> Bool{
         do {
-            try FileManager.default.removeItem(at: _docURL)
+            try FileManager.default.removeItem(at: _codedDocumentURL)
         } catch {
             print("\(error)")
             #warning("handle this error properly or it could lead to unsafe state")
@@ -57,30 +73,7 @@ public class FACountryCoder<CoderItem: Codable> {
         
         return true
     }
-    
-    private func performFirstTimeCheck() {
-        let resourceSection = _docURL.pathComponents.last?.split(separator: ".")
-        
-        if let resource = resourceSection?[0], let ext = resourceSection?[1] {
 
-            let firstTime = FileManager.default.fileExists(atPath: _docURL.path)
-
-            if !firstTime {
-
-                guard let url = Bundle.main.url(forResource: "\(resource)", withExtension: ".\(ext)") else { fatalError() }
-
-                do {
-                    
-                try FileManager.default.copyItem(at: url, to: _docURL)
-                    
-                } catch {
-                    
-                    print("\(error)")
-                    
-                }
-            }
-        }
-    }
 }
 
 enum DatabaseError: Error {
