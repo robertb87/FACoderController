@@ -1,7 +1,7 @@
 import XCTest
 
-import FACoderControllerTests
+import AACoderTests
 
 var tests = [XCTestCaseEntry]()
-tests += FACoderControllerTests.allTests()
+tests += AACoderTests.allTests()
 XCTMain(tests)
