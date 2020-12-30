@@ -10,6 +10,8 @@ let package = Package(
         .library(
             name: "AACoder",
             targets: ["AACoder"]),
+        .library(name: "AADatasourceController",
+                 targets: ["AADatasourceController"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -21,8 +23,12 @@ let package = Package(
         .target(
             name: "AACoder",
             dependencies: []),
+        .target(
+            name: "AADatasourceController",
+            dependencies: []),
         .testTarget(
             name: "AACoderTests",
             dependencies: ["AACoder"]),
+
     ]
 )
