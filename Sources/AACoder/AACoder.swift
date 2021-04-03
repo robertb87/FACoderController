@@ -44,6 +44,7 @@ public class AACoder<CoderItem: Codable> {
         do {
             return try decoder.decode([CoderItem].self, from: data)
         } catch {
+            print(error)
             throw DatabaseError.notDecoded
         }
     }

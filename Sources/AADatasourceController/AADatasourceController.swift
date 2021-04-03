@@ -16,6 +16,12 @@ public class AADatasourceController<DataItem: DataType> {
     public init() {
         
     }
+
+    deinit {
+       // NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: .AADatasourceUpdated, object: nil)
+        print("AADatasourceController Deinit'd")
+    }
     //Read
     public func readAll() -> [DataItem] {
         return toArray(_data)
@@ -57,6 +63,11 @@ public class AADatasourceController<DataItem: DataType> {
     private func updateSubscribers() {
         let note = Notification(name: .AADatasourceUpdated, object: nil, userInfo: nil)
         NotificationCenter.default.post(note)
+
+        let dataArray = readAll()
+        if !dataArray.isEmpty {
+            _coder?.encode(countries: dataArray)
+        }
     }
 
     private func toArray(_ data: [DataItem.ID:DataItem]?) -> [DataItem] {
@@ -77,8 +88,9 @@ public class AADatasourceController<DataItem: DataType> {
 
 public extension AADatasourceController {
 
-    public func configure(codedDocumentURL: URL, bundleDocumentURL: URL) {
+     func configure(codedDocumentURL: URL, bundleDocumentURL: URL) {
         var dataTemp: [DataItem]?
+        checkForNil()
         _coder = AACoder(withCodedDocumentURL: codedDocumentURL)
 
         if _coder?.documentExists() == false {
@@ -96,16 +108,27 @@ public extension AADatasourceController {
             }
 
         } catch {
+            print(error.localizedDescription)
             fatalError("Country decoder error")
         }
 
-        NotificationCenter.default.addObserver(forName: .AADatasourceUpdated, object: nil, queue: nil) { [unowned self] note in
-            _coder?.encode(countries: readAll())
-        }
+//        NotificationCenter.default.addObserver(forName: .AADatasourceUpdated, object: self, queue: nil) { [unowned self] note in
+//            let dataArray = readAll()
+//            if !dataArray.isEmpty {
+//                _coder?.encode(countries: dataArray)
+//            }
+//        }
     }
 }
 
 
 public extension Notification.Name {
     static let AADatasourceUpdated = Notification.Name("AADatasourceUpdated")
+    static let AARequestUpdate = Notification.Name("AARequestUpdate")
+}
+
+public protocol AADataRequestResponseDelegate {
+    associatedtype DataItem = DataType
+
+    func acceptDataArray(data: [DataItem])
 }
